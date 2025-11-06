@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aditya Shinde - Data Analyst | AI Automation</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load D3.js for the animated Skill Chart -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- Load Lucide Icons for vector assets -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        /* Custom Styling & Inter Font */
+        :root {
+            --color-primary: #1e3a8a; /* Deep Indigo */
+            --color-accent-1: #38bdf8; /* Sky Blue (Cyan) */
+            --color-accent-2: #c026d3; /* Fuchsia (Magenta) */
+            --color-text: #e0f2f1; /* Light Cyan */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d111c; /* Dark Background */
+            color: var(--color-text);
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+
+        /* Hero Section Parallax-like Background Effect */
+        #hero-section {
+            background: linear-gradient(135deg, #1e3a8a 0%, #172554 100%);
+            background-size: cover;
+            background-attachment: fixed; /* Parallax effect trigger */
+        }
+
+        /* Gradient Text Class */
+        .text-gradient {
+            background: linear-gradient(90deg, var(--color-accent-1), var(--color-accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Animated Card Entry (Initial Hidden State) */
+        .reveal-item {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+
+        /* Animated Card Entry (Visible State) */
+        .reveal-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Magnetic Button Effect (Subtle Cursor-Follow) */
+        .magnetic-btn {
+            transition: transform 0.1s ease-out, box-shadow 0.3s ease;
+        }
+        .magnetic-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+        }
+        
+        /* D3 Chart Styling */
+        .skill-bar {
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--color-accent-1), var(--color-accent-2));
+            transition: width 1s ease-out; /* Animation */
+        }
+
+        /* Utility for Icon Colors */
+        .icon-accent-1 { color: var(--color-accent-1); }
+        .icon-accent-2 { color: var(--color-accent-2); }
+        
+        /* Modal Backdrop */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid var(--color-accent-1);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Infinite Scrolling Logo Bar */
+        .logo-carousel-container {
+            overflow: hidden;
+            white-space: nowrap;
+            padding: 20px 0;
+            margin-top: 40px;
+            background-color: #172554; /* Darker background */
+            box-shadow: inset 0 3px 10px rgba(0,0,0,0.5), inset 0 -3px 10px rgba(0,0,0,0.5);
+        }
+
+        .logo-carousel {
+            display: inline-block;
+            animation: scroll 30s linear infinite;
+            padding-right: 100%; /* Ensure continuous loop */
+        }
+
+        .logo-carousel-item {
+            display: inline-block;
+            padding: 0 40px;
+            font-size: 1.8rem; /* Larger for icon visibility */
+            opacity: 0.8;
+            transition: opacity 0.3s, transform 0.3s ease-out; /* Added transform transition */
+        }
+        .logo-carousel-item:hover {
+             opacity: 1;
+             color: var(--color-accent-2);
+             transform: scale(1.3); /* Pop-up effect */
+             z-index: 10;
+        }
+        .logo-carousel-item i {
+            stroke-width: 1.5; /* Thicker stroke for better visibility */
+            color: var(--color-accent-1);
+        }
+        
+        @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+    </style>
+</head>
+<body class="selection:bg-cyan-600 selection:text-white">
+
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-50 p-4 backdrop-blur-lg bg-indigo-900/40 shadow-xl shadow-indigo-900/20">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <a href="#home" class="text-2xl font-extrabold text-gradient tracking-wider">
+                ADITYA SHINDE
+            </a>
+            <div class="flex space-x-6 text-sm font-semibold">
+                <a href="#about" class="hover:text-cyan-400 transition duration-300">About</a>
+                <a href="#skills" class="hover:text-cyan-400 transition duration-300">Skills</a>
+                <a href="#projects" class="hover:text-cyan-400 transition duration-300">Experience</a>
+                <a href="#certifications" class="hover:text-cyan-400 transition duration-300">Certifications</a>
+                <a href="#education" class="hover:text-cyan-400 transition duration-300">Education</a>
+                <a href="#contact" class="hover:text-cyan-400 transition duration-300">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 1. Home Section (Hero) -->
+    <section id="home" class="relative min-h-screen flex items-center justify-center p-8 lg:p-16" id="hero-section">
+        <!-- Subtle Glow/Cursor Follow Effect -->
+        <div id="cursor-glow" class="hidden lg:block absolute w-80 h-80 bg-fuchsia-500/30 rounded-full blur-3xl opacity-0 transition duration-500 pointer-events-none"></div>
+
+        <div class="max-w-4xl text-center z-10">
+            <div class="overflow-hidden">
+                <h1 class="text-6xl lg:text-8xl font-black mb-4 reveal-item" style="transition-delay: 0.1s;">
+                    <span class="text-white">I Transform</span> <span class="text-gradient block">Data into Action.</span>
+                </h1>
+            </div>
+            <div class="overflow-hidden">
+                <p class="text-xl lg:text-2xl mb-8 text-indigo-200 reveal-item" style="transition-delay: 0.3s;">
+                    Data Analyst | AI Automation | Business Intelligence
+                </p>
+            </div>
+            <div class="overflow-hidden">
+                <p class="text-lg mb-10 max-w-2xl mx-auto reveal-item" style="transition-delay: 0.5s;">
+                    BTech Graduate skilled in Python, SQL, and Power BI. Proven ability to engineer end-to-end data workflows—from extraction and predictive modeling to interactive, stakeholder-ready dashboards.
+                </p>
+            </div>
+            <div class="flex justify-center space-x-6 reveal-item" style="transition-delay: 0.7s;">
+                <a href="#" onclick="showModal('Resume Download', 'In a real-world scenario, this button would trigger the download of the PDF resume. For this demo, the file is not hosted.'); return false;" class="magnetic-btn bg-white text-gray-900 font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 hover:bg-gray-200">
+                    <i data-lucide="download" class="w-5 h-5 inline-block mr-2"></i> Download Resume
+                </a>
+                <a href="#contact" class="magnetic-btn bg-fuchsia-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 hover:bg-fuchsia-500">
+                    Hire Me (Let's Connect)
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. About Section -->
+    <section id="about" class="py-20 px-8 lg:px-16 bg-gray-900">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-5xl font-extrabold text-center mb-16 text-gradient reveal-item">
+                About My Approach
+            </h2>
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="reveal-item">
+                    <p class="text-2xl font-semibold mb-6 text-indigo-300">
+                        The End-to-End Data Workflow Specialist
+                    </p>
+                    <p class="mb-4 text-gray-300">
+                        My expertise lies in transforming raw, complex data into strategic business assets. I handle the complete data lifecycle: Extraction and Transformation (ETL), Advanced Statistical Modeling, and deploying Interactive Visualizations that drive actionable decisions.
+                    </p>
+                    <p class="mb-4 text-gray-300">
+                        I am uniquely positioned at the intersection of Data Analysis and Automation, leveraging tools like N8N and GenAI to streamline operations and ensure real-time reporting accuracy. My focus is always on data impact and quantifiable results.
+                    </p>
+                    <div class="mt-8 flex space-x-4">
+                        <a href="https://github.com/Adiii-Shinde" target="_blank" class="text-cyan-400 hover:text-cyan-300 transition duration-300">
+                            <i data-lucide="github" class="w-8 h-8 inline-block"></i>
+                        </a>
+                        <a href="https://www.linkedin.com/in/aditya-shinde-6b29002a8" target="_blank" class="text-cyan-400 hover:text-cyan-300 transition duration-300">
+                            <i data-lucide="linkedin" class="w-8 h-8 inline-block"></i>
+                        </a>
+                        <a href="mailto:adityashinde952003@gmail.com" class="text-cyan-400 hover:text-cyan-300 transition duration-300">
+                            <i data-lucide="mail" class="w-8 h-8 inline-block"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Interests/Ambitions Card -->
+                <div class="bg-gray-800 p-8 rounded-xl shadow-2xl border border-gray-700 reveal-item" style="transition-delay: 0.2s;">
+                    <h3 class="text-3xl font-bold mb-4 text-fuchsia-400">Key Focus Areas</h3>
+                    <ul class="space-y-3 text-gray-300">
+                        <li class="flex items-start">
+                            <i data-lucide="arrow-right-circle" class="w-5 h-5 mr-3 mt-1 text-cyan-400 flex-shrink-0"></i>
+                            Driving business strategy through Predictive Analytics and machine learning deployment.
+                        </li>
+                        <li class="flex items-start">
+                            <i data-lucide="arrow-right-circle" class="w-5 h-5 mr-3 mt-1 text-cyan-400 flex-shrink-0"></i>
+                            Exploring GenAI and Prompt Engineering for novel automation solutions.
+                        </li>
+                        <li class="flex items-start">
+                            <i data-lucide="arrow-right-circle" class="w-5 h-5 mr-3 mt-1 text-cyan-400 flex-shrink-0"></i>
+                            Passionate about Financial Markets and improving UI/UX Design.
+                        </li>
+                    </ul>
+                    <div class="mt-8">
+                        <a href="#additional-info" class="text-sm text-fuchsia-400 hover:underline">View Leadership & Interests &rarr;</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Skills Section (Area of Expertise) -->
+    <section id="skills" class="py-20 px-8 lg:px-16 bg-gray-800">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-5xl font-extrabold text-center mb-16 text-gradient reveal-item">
+                Technical Skill Matrix
+            </h2>
+
+            <!-- New: Infinite Scrolling Logo Bar -->
+            <div class="logo-carousel-container reveal-item" style="transition-delay: 0.1s;">
+                <div class="logo-carousel" id="logo-carousel-track">
+                    <!-- Content populated by JS -->
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-12 mt-12">
+                
+                <!-- Detailed Area of Expertise List -->
+                <div class="reveal-item">
+                    <h3 class="text-2xl font-bold mb-6 text-fuchsia-400 border-b border-fuchsia-700 pb-3">Area of Expertise</h3>
+                    <ul class="space-y-4 text-gray-300 text-base">
+                        <li><strong class="text-cyan-400">Programming:</strong> Python (Pandas, NumPy, Matplotlib, Seaborn) | SQL</li>
+                        <li><strong class="text-cyan-400">Statistics & ML:</strong> Descriptive/Inferential Stats | Hypothesis/A/B Testing | Regression, Classification, Clustering | Predictive Modeling | Model Evaluation</li>
+                        <li><strong class="text-cyan-400">Visualization:</strong> Power BI (DAX, Power Query) | Tableau | Excel (Advanced Functions, VBA)</li>
+                        <li><strong class="text-cyan-400">Databases:</strong> SQL Server | MySQL | MongoDB | Database Design | Query Optimization</li>
+                        <li><strong class="text-cyan-400">Data Engineering/Cloud:</strong> ETL Pipelines | Data Warehousing | AWS (S3, EC2) | Azure SQL | Google BigQuery | Snowflake</li>
+                        <li><strong class="text-cyan-400">Business Intelligence:</strong> Development | KPI Tracking | Problem Solving | Data Storytelling</li>
+                        <li><strong class="text-cyan-400">AI & Automation:</strong> Prompt Engineering | AI Automations | GenAI | N8N Workflow Automation | REST APIs</li>
+                    </ul>
+                </div>
+                
+                <!-- Horizontal Bar Chart Area (D3.js Visualization) -->
+                <div class="md:col-span-2 bg-gray-900 p-8 rounded-xl shadow-2xl reveal-item" style="transition-delay: 0.2s;">
+                    <h3 class="text-2xl font-bold mb-6 text-white border-b border-cyan-700 pb-3">Proficiency Breakdown (Scale of 10)</h3>
+                    <div id="skill-chart" class="h-[400px]">
+                        <!-- D3 Chart will render here -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. EXPERIENCE | PROJECTS Section -->
+    <section id="projects" class="py-20 px-8 lg:px-16 bg-gray-900">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-5xl font-extrabold text-center mb-16 text-gradient reveal-item">
+                EXPERIENCE | PROJECTS
+            </h2>
+
+            <div class="grid lg:grid-cols-2 gap-10">
+                <!-- Project 1: Freelance AI Automation Consultant -->
+                <div class="bg-gray-800 p-8 rounded-xl shadow-2xl border border-gray-700 hover:shadow-cyan-500/50 hover:scale-[1.01] transition duration-500 reveal-item"
+                     data-project-name="Freelance AI Automation Consultant"
+                     data-project-summary="Provided consultancy on implementing AI and workflow automation for small businesses. Focused on improving operational efficiency and integrating disparate systems. Reduced client's manual workflows by 35% through custom automation solutions.">
+                    <h3 class="text-3xl font-bold mb-3 text-cyan-400">Freelance AI Automation Consultant</h3>
+                    <p class="text-sm font-mono text-fuchsia-400 mb-4">N8N Workflow | Python | REST APIs | GenAI</p>
+                    <p class="text-gray-300 mb-6">
+                        • Designed and implemented automation solutions using N8N and Python, reducing manual workflows by 35%.
+                        • Conducted stakeholder interviews to gather requirements and integrated REST APIs for automated lead generation.
+                    </p>
+                    <div class="mt-6">
+                        <a href="#contact" class="magnetic-btn w-full bg-fuchsia-600 text-white font-bold py-2 rounded-lg text-sm hover:bg-fuchsia-500 transition duration-300 text-center block">
+                            Post Your Query
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Project 2: Intelligent Banking Risk Assessment Engine -->
+                <div class="bg-gray-800 p-8 rounded-xl shadow-2xl border border-gray-700 hover:shadow-fuchsia-500/50 hover:scale-[1.01] transition duration-500 reveal-item" style="transition-delay: 0.2s;"
+                     data-project-name="Intelligent Banking Risk Assessment Engine"
+                     data-project-summary="Engineered a predictive loan default model that achieved 92% accuracy with advanced statistical modeling. Deployed automated risk scoring pipeline processing 10,000+ applications via real-time Power BI dashboards.">
+                    <h3 class="text-3xl font-bold mb-3 text-cyan-400">Intelligent Banking Risk Assessment Engine</h3>
+                    <p class="text-sm font-mono text-fuchsia-400 mb-4">Python | SQL | Power BI | Predictive Modeling</p>
+                    <p class="text-gray-300 mb-6">
+                        • Engineered predictive loan default models achieving 92% accuracy with advanced statistical modeling.
+                        • Deployed automated risk scoring pipeline processing 10K+ applications via real-time Power BI dashboards.
+                    </p>
+                    <div class="mt-6">
+                        <a href="https://github.com/Adiii-Shinde" target="_blank" class="magnetic-btn w-full bg-cyan-600 text-white font-bold py-2 rounded-lg text-sm hover:bg-cyan-500 transition duration-300 text-center block">
+                            View Project (GitHub)
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Project 3: Real Estate Market Insights -->
+                <div class="bg-gray-800 p-8 rounded-xl shadow-2xl border border-gray-700 hover:shadow-cyan-500/50 hover:scale-[1.01] transition duration-500 reveal-item" style="transition-delay: 0.4s;"
+                     data-project-name="Cloud-Based Real Estate Market Insights"
+                     data-project-summary="Developed a scalable, cloud-based analytics platform for property price forecasting. Created cloud-based analytics for price forecasting; increased trend detection accuracy by 25%. Deployed scalable reporting reducing manual data handling to near zero.">
+                    <h3 class="text-3xl font-bold mb-3 text-cyan-400">Cloud-Based Real Estate Market Insights</h3>
+                    <p class="text-sm font-mono text-fuchsia-400 mb-4">Python | Snowflake | Power BI | Cloud Analytics</p>
+                    <p class="text-gray-300 mb-6">
+                        • Created cloud-based analytics for price forecasting; increased trend detection accuracy by 25%.
+                        • Deployed scalable reporting reducing manual data handling to near zero.
+                    </p>
+                    <div class="mt-6">
+                        <a href="https://github.com/Adiii-Shinde" target="_blank" class="magnetic-btn w-full bg-cyan-600 text-white font-bold py-2 rounded-lg text-sm hover:bg-cyan-500 transition duration-300 text-center block">
+                            View Project (GitHub)
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Project 4: Forensic Facial Rendering & Matching -->
+                <div class="bg-gray-800 p-8 rounded-xl shadow-2xl border border-gray-700 hover:shadow-fuchsia-500/50 hover:scale-[1.01] transition duration-500 reveal-item" style="transition-delay: 0.6s;"
+                     data-project-name="Forensic Facial Rendering & Matching"
+                     data-project-summary="Utilized pattern recognition techniques to reconstruct and match facial features from incomplete data, demonstrating rigorous data quality assessment and precision under tight deadlines.">
+                    <h3 class="text-3xl font-bold mb-3 text-cyan-400">Forensic Facial Rendering & Matching</h3>
+                    <p class="text-sm font-mono text-fuchsia-400 mb-4">Pattern Recognition | Data Quality Assessment | College Project</p>
+                    <p class="text-gray-300 mb-6">
+                        • Utilized pattern recognition techniques to reconstruct and match facial features from incomplete data.
+                        • Demonstrated rigorous data quality assessment and precision under tight deadlines.
+                    </p>
+                    <div class="mt-6">
+                        <a href="https://github.com/Adiii-Shinde" target="_blank" class="magnetic-btn w-full bg-cyan-600 text-white font-bold py-2 rounded-lg text-sm hover:bg-cyan-500 transition duration-300 text-center block">
+                            View Project (GitHub)
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Cloud Virtual Internship -->
+                <div class="bg-gray-800 p-8 rounded-xl shadow-2xl border border-gray-700 lg:col-span-2 hover:shadow-fuchsia-500/50 hover:scale-[1.005] transition duration-500 reveal-item" style="transition-delay: 0.8s;">
+                    <h3 class="text-3xl font-bold mb-3 text-fuchsia-400">Cloud Virtual Internship - AICTE EduSkills (Supported by AWS Academy)</h3>
+                    <p class="text-sm font-mono text-cyan-400 mb-4">AWS | Cloud Deployment | Infrastructure</p>
+                    <p class="text-gray-300">
+                        • Completed 10 weeks of cloud training focused on AWS deployment, infrastructure, and scalability, building a foundational understanding of cloud data environments.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Certifications Section -->
+    <section id="certifications" class="py-20 px-8 lg:px-16 bg-gray-800">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-5xl font-extrabold text-center mb-16 text-gradient reveal-item">
+                Validated Expertise: Certifications
+            </h2>
+            <div class="flex flex-wrap justify-center gap-8 reveal-item" style="transition-delay: 0.1s;">
+                <div class="bg-gray-900 p-6 rounded-xl shadow-xl border-t-4 border-cyan-500 hover:scale-[1.03] transition duration-300 flex flex-col items-center w-full md:w-1/4">
+                    <i data-lucide="award" class="w-8 h-8 mb-3 text-cyan-400"></i>
+                    <p class="font-semibold text-lg text-center">Oracle Analytics Cloud 2025 Certified Professional</p>
+                    <span class="text-xs text-gray-500 mt-1">Oracle</span>
+                </div>
+                <div class="bg-gray-900 p-6 rounded-xl shadow-xl border-t-4 border-fuchsia-500 hover:scale-[1.03] transition duration-300 flex flex-col items-center w-full md:w-1/4">
+                    <i data-lucide="brain" class="w-8 h-8 mb-3 text-fuchsia-400"></i>
+                    <p class="font-semibold text-lg text-center">OCI AI Foundations Associate</p>
+                    <span class="text-xs text-gray-500 mt-1">Oracle</span>
+                </div>
+                <div class="bg-gray-900 p-6 rounded-xl shadow-xl border-t-4 border-cyan-500 hover:scale-[1.03] transition duration-300 flex flex-col items-center w-full md:w-1/4">
+                    <i data-lucide="cpu" class="w-8 h-8 mb-3 text-cyan-400"></i>
+                    <p class="font-semibold text-lg text-center">OCI Gen AI Professional</p>
+                    <span class="text-xs text-gray-500 mt-1">Oracle</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. Education Section -->
+    <section id="education" class="py-20 px-8 lg:px-16 bg-gray-900">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-5xl font-extrabold text-center mb-16 text-gradient reveal-item">
+                Academic Background
+            </h2>
+            <div class="grid md:grid-cols-3 gap-8 text-center reveal-item" style="transition-delay: 0.1s;">
+                <!-- University -->
+                <div class="bg-gray-800 p-8 rounded-xl shadow-2xl border-l-4 border-fuchsia-500">
+                    <i data-lucide="graduation-cap" class="w-8 h-8 mx-auto mb-4 text-fuchsia-400"></i>
+                    <h3 class="text-2xl font-bold mb-1 text-white">Savitribai Phule Pune University</h3>
+                    <p class="text-lg text-cyan-400 mb-2">Bachelor of Engineering - Information Technology</p>
+                    <p class="text-sm text-gray-400">Aggregate CGPA: 7.84</p>
+                </div>
+                <!-- Class XII -->
+                <div class="bg-gray-800 p-8 rounded-xl shadow-2xl border-l-4 border-cyan-500">
+                    <i data-lucide="book-open" class="w-8 h-8 mx-auto mb-4 text-cyan-400"></i>
+                    <h3 class="text-2xl font-bold mb-1 text-white">M.P.S High School, India (Class XII)</h3>
+                    <p class="text-lg text-fuchsia-400 mb-2">Higher Secondary Education</p>
+                    <p class="text-sm text-gray-400">Aggregate: 93%</p>
+                </div>
+                <!-- Class X -->
+                <div class="bg-gray-800 p-8 rounded-xl shadow-2xl border-l-4 border-fuchsia-500">
+                    <i data-lucide="school" class="w-8 h-8 mx-auto mb-4 text-fuchsia-400"></i>
+                    <h3 class="text-2xl font-bold mb-1 text-white">M.P.S High School, India (Class X)</h3>
+                    <p class="text-lg text-cyan-400 mb-2">Secondary Education</p>
+                    <p class="text-sm text-gray-400">Aggregate: 91.40%</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. Additional Information Section (Moved from About) -->
+    <section id="additional-info" class="py-20 px-8 lg:px-16 bg-gray-800">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-5xl font-extrabold text-center mb-16 text-gradient reveal-item">
+                Interests & Leadership
+            </h2>
+            <div class="grid md:grid-cols-3 gap-8 text-center reveal-item" style="transition-delay: 0.1s;">
+                <!-- Interests -->
+                <div class="bg-gray-900 p-8 rounded-xl shadow-2xl border-t-4 border-cyan-500 flex flex-col items-center">
+                    <i data-lucide="lightbulb" class="w-8 h-8 mb-4 text-cyan-400"></i>
+                    <h3 class="text-2xl font-bold mb-2 text-white">Interests</h3>
+                    <p class="text-gray-300">UI/UX Design (Figma, Canva)</p>
+                    <p class="text-gray-300">Financial Markets</p>
+                    <p class="text-gray-300">AI Automation</p>
+                </div>
+                <!-- Leadership -->
+                <div class="bg-gray-900 p-8 rounded-xl shadow-2xl border-t-4 border-fuchsia-500 md:col-span-2 flex flex-col items-center">
+                    <i data-lucide="users" class="w-8 h-8 mb-4 text-fuchsia-400"></i>
+                    <h3 class="text-2xl font-bold mb-4 text-white">Leadership & Extracurriculars</h3>
+                    <ul class="space-y-2 text-base text-gray-300 text-left w-full max-w-lg">
+                        <li class="flex items-start"><i data-lucide="check-circle" class="w-4 h-4 mr-3 mt-1 text-cyan-400 flex-shrink-0"></i> Club Service Director in the Rotaract Club of PESMCOE IT (RIY 2022-23)</li>
+                        <li class="flex items-start"><i data-lucide="check-circle" class="w-4 h-4 mr-3 mt-1 text-cyan-400 flex-shrink-0"></i> Volunteered in NSS as a Design Team Member (2023-2024)</li>
+                        <li class="flex items-start"><i data-lucide="check-circle" class="w-4 h-4 mr-3 mt-1 text-cyan-400 flex-shrink-0"></i> Appointed as the Event Lead at Google Developer Student Club PESMCOE.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 8. Contact Section -->
+    <section id="contact" class="py-20 px-8 lg:px-16 bg-gray-900 border-t border-gray-700">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-5xl font-extrabold mb-4 text-gradient reveal-item">
+                Let's Collaborate.
+            </h2>
+            <p class="text-xl text-indigo-200 mb-12 reveal-item" style="transition-delay: 0.1s;">
+                Ready to transform your data into actionable intelligence?
+            </p>
+
+            <form id="contact-form" class="space-y-6 bg-gray-800 p-8 rounded-xl shadow-2xl reveal-item" style="transition-delay: 0.3s;">
+                <div>
+                    <input type="text" id="contact-name" placeholder="Your Name" class="w-full p-4 rounded-lg bg-gray-700 border border-gray-600 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-white transition duration-300" required>
+                </div>
+                <div>
+                    <input type="email" id="contact-email" placeholder="Your Email Address" class="w-full p-4 rounded-lg bg-gray-700 border border-gray-600 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-white transition duration-300" required>
+                </div>
+                <div>
+                    <textarea id="project-description" placeholder="Paste the Job Description or Project Brief here (Focus on Data/AI needs)" rows="7" class="w-full p-4 rounded-lg bg-gray-700 border border-gray-600 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-white transition duration-300" required></textarea>
+                </div>
+                <div class="flex space-x-4">
+                    <button type="button" onclick="showModal('Message Sent', 'Your manual message has been sent successfully! (Simulated)');" class="magnetic-btn w-1/3 bg-fuchsia-600 text-white font-bold py-4 rounded-lg text-lg hover:bg-fuchsia-500 transition duration-300">
+                        Send Message
+                    </button>
+                    <button type="button" onclick="draftRecruiterPitch()" class="magnetic-btn w-2/3 bg-cyan-600 text-white font-bold py-4 rounded-lg text-lg hover:bg-cyan-500 transition duration-300">
+                        ✨ AI Draft My Pitch
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-12 reveal-item" style="transition-delay: 0.5s;">
+                <p class="text-lg font-semibold mb-4 text-cyan-400">Direct Contact & Socials</p>
+                <div class="flex justify-center space-x-8">
+                    <a href="mailto:adityashinde952003@gmail.com" class="hover:text-fuchsia-400 transition duration-300 text-lg flex items-center">
+                        <i data-lucide="mail" class="w-6 h-6 mr-2"></i> adityashinde952003@gmail.com
+                    </a>
+                    <a href="https://github.com/Adiii-Shinde" target="_blank" class="hover:text-fuchsia-400 transition duration-300 text-lg flex items-center">
+                        <i data-lucide="github" class="w-6 h-6 mr-2"></i> GitHub
+                    </a>
+                    <a href="https://www.linkedin.com/in/aditya-shinde-6b29002a8" target="_blank" class="hover:text-fuchsia-400 transition duration-300 text-lg flex items-center">
+                        <i data-lucide="linkedin" class="w-6 h-6 mr-2"></i> LinkedIn
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="p-6 text-center text-sm bg-gray-800 border-t border-gray-700">
+        <p class="text-gray-400">&copy; 2025 Aditya Shinde. Built with creativity and code.</p>
+    </footer>
+
+    <!-- AI Response Modal -->
+    <div id="ai-modal" class="modal-backdrop">
+        <div class="bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-2xl transform transition-all duration-300">
+            <div class="flex justify-between items-start mb-4">
+                <h3 id="modal-title" class="text-2xl font-bold text-gradient">AI Generated Content</h3>
+                <button onclick="hideModal()" class="text-gray-400 hover:text-white transition duration-300">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div id="modal-content" class="text-gray-300 max-h-[60vh] overflow-y-auto whitespace-pre-wrap">
+                <!-- Content will be injected here -->
+            </div>
+            <div id="modal-sources" class="text-xs text-gray-500 mt-4 border-t border-gray-700 pt-2 hidden">
+                **Sources:**
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loading Spinner Overlay -->
+    <div id="loading-overlay" class="modal-backdrop z-[1001]" style="display: none;">
+        <div class="flex flex-col items-center">
+            <div class="spinner"></div>
+            <p class="mt-4 text-lg font-semibold text-cyan-400">AI is thinking...</p>
+        </div>
+    </div>
+
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // --- GLOBAL CONFIG & UTILITIES ---
+        const apiKey = "";
+        const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=" + apiKey;
+
+        // Data for the infinite scrolling logo bar (Using Lucide Icons as placeholder logos)
+        const skillIcons = [
+            { icon: "git-branch", name: "Python" },
+            { icon: "database", name: "SQL" },
+            { icon: "bar-chart-2", name: "Power BI" },
+            { icon: "table", name: "Tableau" },
+            { icon: "file-spreadsheet", name: "Excel" },
+            { icon: "monitor-dot", name: "Pandas/NumPy" },
+            { icon: "line-chart", name: "Seaborn" },
+            { icon: "mongo-db", name: "MongoDB" },
+            { icon: "snowflake", name: "Snowflake" },
+            { icon: "cloud", name: "AWS/BigQuery" },
+            { icon: "layers", name: "ETL Pipelines" },
+            { icon: "cpu", name: "GenAI" },
+            { icon: "bot", name: "N8N Workflow" },
+            { icon: "plug", name: "REST APIs" },
+            { icon: "trending-up", name: "Predictive Modeling" }
+        ];
+
+        // --- MODAL & LOADING UTILITIES ---
+        
+        function showModal(title, content, sources = []) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-content').innerHTML = content.replace(/\n/g, '<br>');
+            const sourceDiv = document.getElementById('modal-sources');
+            
+            if (sources.length > 0) {
+                sourceDiv.innerHTML = '<strong>Sources:</strong> ' + sources.map(s => 
+                    `<a href="${s.uri}" target="_blank" class="text-fuchsia-400 hover:underline">${s.title.substring(0, 50)}...</a>`
+                ).join(', ');
+                sourceDiv.classList.remove('hidden');
+            } else {
+                sourceDiv.classList.add('hidden');
+            }
+            document.getElementById('ai-modal').style.display = 'flex';
+        }
+
+        function hideModal() {
+            document.getElementById('ai-modal').style.display = 'none';
+        }
+
+        function setLoading(isLoading) {
+            document.getElementById('loading-overlay').style.display = isLoading ? 'flex' : 'none';
+        }
+        
+        async function fetchWithBackoff(url, options, retries = 0) {
+            try {
+                const response = await fetch(url, options);
+                if (response.status === 429 && retries < 3) {
+                    const delay = Math.pow(2, retries) * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return fetchWithBackoff(url, options, retries + 1);
+                }
+                if (!response.ok) {
+                    throw new Error(`API call failed with status: ${response.status}`);
+                }
+                return response.json();
+            } catch (error) {
+                console.error("Fetch failed after retries:", error);
+                throw new Error("Failed to connect to the AI service. Please try again.");
+            }
+        }
+
+
+        // --- GEMINI FEATURE: PITCH DRAFTER ---
+        // (Keeping only the function used in the Contact section)
+
+        async function draftRecruiterPitch() {
+            const name = document.getElementById('contact-name').value.trim();
+            const projectDescription = document.getElementById('project-description').value.trim();
+            const candidateSkills = "Python (Pandas, ML, SQL), Power BI, Tableau, N8N Automation, GenAI, Predictive Modeling, ETL, AWS/Snowflake.";
+
+            if (!name) {
+                return showModal('Input Required', 'Please enter your name for the draft.');
+            }
+            if (!projectDescription) {
+                return showModal('Input Required', 'Please paste the Job Description or Project Brief into the large text area.');
+            }
+
+            const prompt = `Draft a concise, professional introductory pitch (max 4 sentences) from the candidate, Aditya Shinde (a Data Analyst/AI Automation specialist), to a recruiter based on the provided job/project description. The pitch MUST highlight how the candidate's core skills directly align with the described need, focusing on quantifiable results and AI/Automation expertise.
+
+Candidate Name: ${name}
+Candidate Key Skills: ${candidateSkills}
+Job/Project Description: ${projectDescription}
+`;
+
+            setLoading(true);
+
+            try {
+                const payload = {
+                    contents: [{ parts: [{ text: prompt }] }],
+                    tools: [{ "google_search": {} }],
+                    systemInstruction: {
+                        parts: [{ text: "You are a concise, professional marketing writer for a highly skilled Data Analyst, ensuring the draft is immediately impactful." }]
+                    },
+                };
+
+                const response = await fetchWithBackoff(GEMINI_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const text = response.candidates?.[0]?.content?.parts?.[0]?.text || "The AI response was empty.";
+
+                // Prepend an opening to suggest how to use the draft
+                const fullDraft = `
+**--- AI DRAFT START ---**
+
+Hi [Recruiter/Hiring Manager Name],
+
+${text}
+
+I look forward to discussing how my experience in driving business results through predictive modeling and automation can benefit your team.
+
+Best regards,
+${name}
+[Your Contact Info]
+
+**--- AI DRAFT END ---**
+
+(Copy the content above into your email or pitch!)
+`;
+
+                showModal('✨ Recruiter Pitch Draft', fullDraft);
+
+            } catch (error) {
+                showModal('AI Error', 'An error occurred while drafting the pitch: ' + error.message);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+
+        // --- D3 CHART & SCROLL LOGIC ---
+        
+        function renderSkillChart() {
+            // Data for the D3 chart (Horizontal Bar Chart with all scores set to 9)
+            const data = [
+                { skill: "Python & Core ML", score: 9 },
+                { skill: "Power BI / Tableau", score: 9 },
+                { skill: "AI & N8N Automation", score: 9 },
+                { skill: "SQL & Databases", score: 9 },
+                { skill: "Cloud & ETL", score: 9 },
+                { skill: "Statistical Modeling", score: 9 },
+            ];
+
+            const margin = { top: 20, right: 60, bottom: 20, left: 180 }; // Increased left margin for labels
+            const container = d3.select("#skill-chart");
+            const containerWidth = container.node().getBoundingClientRect().width;
+            const width = containerWidth - margin.left - margin.right;
+            const height = 400 - margin.top - margin.bottom;
+
+            // Clear previous SVG content if any
+            container.selectAll("svg").remove();
+
+            const svg = container.append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            const x = d3.scaleLinear() // X-axis is linear (score)
+                .domain([0, 10])
+                .range([0, width]);
+
+            const y = d3.scaleBand() // Y-axis is categorical (skill)
+                .range([height, 0])
+                .domain(data.map(d => d.skill))
+                .padding(0.4);
+
+            // Add X axis (Top or Bottom)
+            svg.append("g")
+                .attr("transform", `translate(0,${height})`) // Position at the bottom
+                .call(d3.axisBottom(x).ticks(5))
+                .style("color", "var(--color-text)");
+
+            // Add Y axis (Labels)
+            svg.append("g")
+                .call(d3.axisLeft(y).tickSize(0).tickPadding(10))
+                .style("color", "var(--color-text)")
+                .selectAll("text")
+                .style("text-anchor", "end");
+
+            // Create bars (initial width 0 for animation)
+            const bars = svg.selectAll(".bar")
+                .data(data)
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", x(0))
+                .attr("y", d => y(d.skill))
+                .attr("height", y.bandwidth())
+                .attr("width", 0) // Start width at 0
+                .attr("fill", (d, i) => i % 2 === 0 ? "var(--color-accent-1)" : "var(--color-accent-2)")
+                .attr("rx", 4)
+                .attr("ry", 4);
+
+            // Animate bars
+            bars.transition()
+                .duration(1000)
+                .attr("width", d => x(d.score))
+                .delay((d, i) => i * 150); // Staggered animation
+
+            // Add score labels inside the bars
+            svg.selectAll(".score-label")
+                .data(data)
+                .enter().append("text")
+                .attr("class", "score-label")
+                .attr("x", d => x(d.score) - 20) // Position near the end of the bar
+                .attr("y", d => y(d.skill) + y.bandwidth() / 2 + 5)
+                .attr("text-anchor", "end")
+                .text(d => d.score + "/10")
+                .style("fill", "#0d111c") // Dark text for contrast inside the light bar
+                .style("font-weight", "bold")
+                .style("opacity", 0) // Start hidden
+                .transition()
+                .delay((d, i) => i * 150 + 1000) // Delay until bar is fully drawn
+                .duration(500)
+                .style("opacity", 1);
+        }
+
+        // --- Logo Carousel Population ---
+        function populateLogoCarousel() {
+            const container = document.getElementById('logo-carousel-track');
+            if (!container) return;
+
+            // Generate HTML for the skills list, duplicated once for infinite scroll effect
+            const skillHtml = skillIcons.map(item => 
+                `<span class="logo-carousel-item" title="${item.name}"><i data-lucide="${item.icon}" class="w-7 h-7 inline"></i></span>`
+            ).join('');
+            
+            container.innerHTML = skillHtml + skillHtml; // Duplicate for smooth looping
+            lucide.createIcons(); // Re-render icons after injection
+        }
+
+        // --- Intersection Observer (Scroll Reveal) ---
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('reveal-visible');
+                    
+                    // Specific check for the Skills section to render the D3 chart
+                    if (entry.target.id === 'skills') {
+                        const chartContainer = document.getElementById('skill-chart');
+                        // Check if the chart hasn't been rendered yet before calling the function
+                        if (chartContainer && chartContainer.querySelectorAll('svg').length === 0) {
+                            renderSkillChart();
+                        }
+                    }
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal-item').forEach(el => {
+            observer.observe(el);
+        });
+
+        // --- Cursor Glow Effect for Hero Section (Micro-interaction) ---
+        const cursorGlow = document.getElementById('cursor-glow');
+        const heroSection = document.getElementById('hero-section');
+
+        if (cursorGlow && heroSection) {
+            heroSection.addEventListener('mousemove', (e) => {
+                const rect = heroSection.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                cursorGlow.style.opacity = '1';
+                cursorGlow.style.transform = `translate(${x - 160}px, ${y - 160}px)`; // Center the glow div
+            });
+
+            heroSection.addEventListener('mouseleave', () => {
+                cursorGlow.style.opacity = '0';
+            });
+        }
+        
+        // Run carousel population on load
+        window.onload = populateLogoCarousel;
+        
+    </script>
+</body>
+</html>
