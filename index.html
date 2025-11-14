@@ -566,7 +566,7 @@
     </div>
 
 
-    <script>
+   <script>
         // Initialize Lucide Icons
         lucide.createIcons();
 
@@ -768,9 +768,15 @@ ${name}
                 { skill: "Statistical Modeling", score: 9 },
             ];
 
-            const margin = { top: 20, right: 60, bottom: 20, left: 180 }; // Increased left margin for labels
+            // Use a variable for width calculation to make it responsive
             const container = d3.select("#skill-chart");
+            if (!container.node()) return; // Exit if container doesn't exist
+
+            // FIX: Ensure the container height is set for accurate calculation
             const containerWidth = container.node().getBoundingClientRect().width;
+            
+            // Reduced left margin slightly for mobile devices if needed, keeping it responsive
+            const margin = { top: 20, right: 20, bottom: 20, left: 160 }; 
             const width = containerWidth - margin.left - margin.right;
             const height = 400 - margin.top - margin.bottom;
 
@@ -898,10 +904,16 @@ ${name}
             });
         }
         
-        // Run carousel population on load
-        window.onload = populateLogoCarousel;
+        // ** FIX ADDED: Ensure chart renders immediately on page load as a fallback **
+        window.onload = function() {
+            populateLogoCarousel();
+            // Call renderSkillChart directly when the window is fully loaded to guarantee execution
+            // (The Intersection Observer will also trigger it, but this ensures it works on initial load, too.)
+            renderSkillChart(); 
+        };
         
     </script>
 </body>
 </html>
+
 
